@@ -5,6 +5,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	_ "net/http/pprof"
+
+	"github.com/felixge/fgprof"
 )
 
 var (
@@ -24,6 +28,12 @@ func main() {
 		Addr:    fmt.Sprintf("%s:%d", bind, port),
 		Handler: serveMux(),
 	}
+
+	// fgprof
+	http.DefaultServeMux.Handle("/debug/fgprof", fgprof.Handler())
+	go func() {
+		log.Println(http.ListenAndServe(":6060", nil))
+	}()
 
 	if err := srv.ListenAndServe(); err != nil {
 		log.Fatal(err)
